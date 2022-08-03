@@ -141,7 +141,7 @@ sealed class WeatherType(
 
   object SlightSnowFall : WeatherType(
     weatherDesc = "Slight snow fall",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_snow_fall,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
@@ -150,7 +150,7 @@ sealed class WeatherType(
 
   object ModerateSnowFall : WeatherType(
     weatherDesc = "Moderate snow fall",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_snow_fall,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
@@ -159,7 +159,7 @@ sealed class WeatherType(
 
   object HeavySnowFall : WeatherType(
     weatherDesc = "Heavy snow fall",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_snow_fall,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
@@ -168,7 +168,7 @@ sealed class WeatherType(
 
   object SnowGrains : WeatherType(
     weatherDesc = "Snow grains",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_snow_fall,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
@@ -177,7 +177,7 @@ sealed class WeatherType(
 
   object SlightRainShowers : WeatherType(
     weatherDesc = "Slight rain showers",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_rain,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
@@ -186,7 +186,7 @@ sealed class WeatherType(
 
   object ModerateRainShowers : WeatherType(
     weatherDesc = "Moderate rain showers",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_rain,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
@@ -195,7 +195,7 @@ sealed class WeatherType(
 
   object ViolentRainShowers : WeatherType(
     weatherDesc = "Violent rain showers",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_heavy_rain,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
@@ -204,7 +204,7 @@ sealed class WeatherType(
 
   object SlightSnowShowers : WeatherType(
     weatherDesc = "Light snow showers",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_snow_fall,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
@@ -213,7 +213,7 @@ sealed class WeatherType(
 
   object HeavySnowShowers : WeatherType(
     weatherDesc = "Heavy snow showers",
-    iconRes = R.drawable.ic_thunder,
+    iconRes = R.drawable.ic_snow_fall,
     backgroundRes = R.drawable.gradient_thunder,
     cardbackRes = R.drawable.card_back_thunder
 
