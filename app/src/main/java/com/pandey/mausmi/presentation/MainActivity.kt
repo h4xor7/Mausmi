@@ -1,8 +1,8 @@
 package com.pandey.mausmi.presentation
 
 import android.Manifest
+import android.location.Geocoder
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -11,13 +11,18 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pandey.mausmi.databinding.ActivityMainBinding
+import com.pandey.mausmi.domain.location.LocationTracker
 import com.pandey.mausmi.domain.weather.WeatherData
 import com.pandey.mausmi.domain.weather.WeatherType
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.IOException
 import java.time.format.DateTimeFormatter
+import java.util.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -25,7 +30,8 @@ class MainActivity : AppCompatActivity() {
   private val viewModel: MausmiViewModel by viewModels()
   private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
   private lateinit var mainAdapter: MainAdapter
-
+  @Inject
+  lateinit var locationTracker: LocationTracker
 
   @RequiresApi(Build.VERSION_CODES.O)
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,10 +53,9 @@ class MainActivity : AppCompatActivity() {
       )
     )
 
-
     setData()
 
-
+   // setAddress()
   }
 
   private fun setupRecyclerView(listdata: List<WeatherData>?, weatherType: WeatherType?) {
@@ -74,7 +79,8 @@ class MainActivity : AppCompatActivity() {
           binding.pgBar.root.visibility = View.VISIBLE
         } else if (!it.isLoading && it.error != null) {
           Toast.makeText(this@MainActivity, "unexpected error occurred", Toast.LENGTH_SHORT).show()
-        } else {
+        }
+        else {
           binding.pgBar.root.visibility = View.GONE
           val data = it.weatherInfo?.currentWeatherData
           Log.d("TAG", "setData: ${data?.temperatureCelsius}")
@@ -94,6 +100,14 @@ class MainActivity : AppCompatActivity() {
             )
           }
 
+          locationTracker.getCurrentLocation()?.longitude?.let {
+            locationTracker.getCurrentLocation()?.latitude?.let { it1 ->
+              getAddress(it1,
+                it)
+            }
+          }
+
+
           setupRecyclerView(
             it.weatherInfo?.weatherDataPerDay?.get(0),
             it.weatherInfo?.currentWeatherData?.weatherType
@@ -104,10 +118,37 @@ class MainActivity : AppCompatActivity() {
 
 
       }
+
+
     }
 
 
   }
 
 
+
+  private fun getAddress(latitude: Double, longitude: Double) {
+   // val result = StringBuilder()
+    try {
+      val geocoder = Geocoder(this, Locale.getDefault())
+      val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+      if (addresses.size > 0) {
+        val address = addresses[0]
+
+        binding.txtPlace.text = address.locality
+      //  result.append(address.locality).append("\n")
+       // result.append(address.countryName)
+      }
+    } catch (e: IOException) {
+      e.message?.let { Log.e("tag", it) }
+    }
+
+   // Toast.makeText(this, result.toString(), Toast.LENGTH_SHORT).show()
+   // Log.d(Companion.TAG, "getAddress: ${result.toString()}")
+
+  }
+
+  companion object {
+    private const val TAG = "MainActivity"
+  }
 }

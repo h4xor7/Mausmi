@@ -12,10 +12,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
 class MausmiViewModel @Inject constructor(
   private val mausmiRepository: MausmiRepository,
-  private val locationTracker: LocationTracker
+  private val locationTracker: LocationTracker,
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(MausmiState())
   val uiState: StateFlow<MausmiState> get() = _uiState
@@ -49,6 +50,9 @@ class MausmiViewModel @Inject constructor(
       }
     }
   }
+
+
+
 
   companion object {
     private const val TAG = "MausmiViewModel"
