@@ -28,7 +28,6 @@ import com.pandey.mausmi.domain.location.LocationTracker
 import com.pandey.mausmi.domain.weather.WeatherData
 import com.pandey.mausmi.domain.weather.WeatherType
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.IOException
 import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.inject.Inject
@@ -50,24 +49,8 @@ class MainActivity : AppCompatActivity() {
     val view = binding.root
     setContentView(view)
 
-
     locationHandler()
-   /* permissionLauncher =
-      registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        viewModel.loadWeatherInfo();
-      }
-    permissionLauncher.launch(
-      arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-      )
-    )
-*/
-
-
     setData()
-
-   // setAddress()
   }
 
   private fun locationHandler() {
@@ -129,23 +112,15 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun getCityName(lat: Double, long: Double) {
-    val cityName: String
-    val countryName: String
-    val pinCode: String
+
     val area: String
-    val stateName: String
 
     val geoCoder = Geocoder(this, Locale.getDefault())
     val address = geoCoder.getFromLocation(lat, long, 3)
 
-    cityName = address?.get(0)?.locality.toString()
-    stateName = address?.get(0)?.adminArea.toString()
-
-    countryName = address?.get(0)?.countryName.toString()
-    pinCode = address?.get(0)?.postalCode.toString()
     area = address?.get(0)?.subLocality.toString()
 
-    binding.txtPlace.text = area.toString()
+    binding.txtPlace.text = area
 
     bindHandler(lat, long)
 
@@ -156,6 +131,7 @@ class MainActivity : AppCompatActivity() {
     viewModel.loadWeatherData(lat,long)
   }
 
+  @Suppress("DEPRECATION")
   @SuppressLint("MissingPermission")
   private fun newLocationData() {
     val locationRequest = LocationRequest()
