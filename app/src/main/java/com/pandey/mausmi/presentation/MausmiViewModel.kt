@@ -1,5 +1,6 @@
 package com.pandey.mausmi.presentation
 
+import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,35 +22,36 @@ class MausmiViewModel @Inject constructor(
   private val _uiState = MutableStateFlow(MausmiState())
   val uiState: StateFlow<MausmiState> get() = _uiState
 
-  fun loadWeatherInfo() {
+
+  fun loadWeatherData(lat: Double, long: Double){
+
     viewModelScope.launch {
       _uiState.value = MausmiState(isLoading = true, error = null)
 
-      locationTracker.getCurrentLocation()?.let { location ->
-        when (val result = mausmiRepository.getWeatherData(location.latitude, location.longitude)) {
-          is Resource.Success -> {
-            _uiState.value = MausmiState(weatherInfo = result.data, isLoading = false, error = null)
-            Log.d(Companion.TAG, "loadWeatherInfo: Succees ${result.data} ")
-          }
-          is Resource.Error -> {
-            _uiState.value = MausmiState(weatherInfo = null, isLoading = false, error = result.message)
-            Log.d(Companion.TAG, "loadWeatherInfo: Error ${result.message} ")
-
-          }
-          else -> {
-            _uiState.value = MausmiState(weatherInfo = null, isLoading = false, error = result.message)
-            Log.d(Companion.TAG, "loadWeatherInfo: Loading ${result.message} ")
-
-          }
+      when (val result = mausmiRepository.getWeatherData(lat, long)) {
+        is Resource.Success -> {
+          _uiState.value = MausmiState(weatherInfo = result.data, isLoading = false, error = null)
+          Log.d(Companion.TAG, "loadWeatherInfo: Succees ${result.data} ")
         }
+        is Resource.Error -> {
+          _uiState.value = MausmiState(weatherInfo = null, isLoading = false, error = result.message)
+          Log.d(Companion.TAG, "loadWeatherInfo: Error ${result.message} ")
 
-      }?:kotlin.run {
-        _uiState.value = MausmiState(weatherInfo = null, isLoading = false, error = "Couldn't retrieve location. Make sure to grant permission and enable GPS.")
-        Log.d(Companion.TAG, "loadWeatherInfo: error bhr")
+        }
+        else -> {
+          _uiState.value = MausmiState(weatherInfo = null, isLoading = false, error = result.message)
+          Log.d(Companion.TAG, "loadWeatherInfo: Loading ${result.message} ")
 
+        }
       }
+
     }
+
   }
+
+
+
+
 
 
 

@@ -1,9 +1,16 @@
 package com.pandey.mausmi.presentation
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.location.Geocoder
+import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -11,9 +18,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.location.*
 import com.pandey.mausmi.databinding.ActivityMainBinding
 import com.pandey.mausmi.domain.location.LocationTracker
 import com.pandey.mausmi.domain.weather.WeatherData
@@ -32,7 +41,7 @@ class MainActivity : AppCompatActivity() {
   private lateinit var mainAdapter: MainAdapter
   @Inject
   lateinit var locationTracker: LocationTracker
-
+  private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
   @RequiresApi(Build.VERSION_CODES.O)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -42,7 +51,8 @@ class MainActivity : AppCompatActivity() {
     setContentView(view)
 
 
-    permissionLauncher =
+    locationHandler()
+   /* permissionLauncher =
       registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         viewModel.loadWeatherInfo();
       }
@@ -52,11 +62,134 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.ACCESS_COARSE_LOCATION,
       )
     )
+*/
+
 
     setData()
 
    // setAddress()
   }
+
+  private fun locationHandler() {
+    val locationManager =
+      application.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ||
+            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+    if (!isGpsEnabled) {
+      showGpsPopUp()
+
+    }
+
+    permissionLauncher =
+      registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+
+        getLastLocation()
+      }
+    permissionLauncher.launch(
+      arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+      )
+    )
+    fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
+
+  }
+
+  private fun showGpsPopUp() {
+    AlertDialog.Builder(this)
+      .setMessage("gps network not enabled")
+      .setPositiveButton(
+        "open location settings"
+      ) { _, _ ->
+        this.startActivity(
+          Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        )
+      }
+      .setNegativeButton("Cancel", null)
+      .show()
+  }
+
+
+  @SuppressLint("MissingPermission")
+  private fun getLastLocation() {
+    fusedLocationProviderClient.lastLocation.addOnCompleteListener { task ->
+      val location: Location? = task.result
+      if (location == null) {
+        newLocationData()
+      } else {
+
+
+        getCityName(location.latitude, location.longitude)
+
+        Log.d("Debug:", "Your Location:" + location.longitude)
+      }
+    }
+  }
+
+  private fun getCityName(lat: Double, long: Double) {
+    val cityName: String
+    val countryName: String
+    val pinCode: String
+    val area: String
+    val stateName: String
+
+    val geoCoder = Geocoder(this, Locale.getDefault())
+    val address = geoCoder.getFromLocation(lat, long, 3)
+
+    cityName = address?.get(0)?.locality.toString()
+    stateName = address?.get(0)?.adminArea.toString()
+
+    countryName = address?.get(0)?.countryName.toString()
+    pinCode = address?.get(0)?.postalCode.toString()
+    area = address?.get(0)?.subLocality.toString()
+
+    binding.txtPlace.text = area.toString()
+
+    bindHandler(lat, long)
+
+
+  }
+
+  private fun bindHandler(lat: Double, long: Double) {
+    viewModel.loadWeatherData(lat,long)
+  }
+
+  @SuppressLint("MissingPermission")
+  private fun newLocationData() {
+    val locationRequest = LocationRequest()
+    locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+    locationRequest.interval = 0
+    locationRequest.fastestInterval = 0
+    locationRequest.numUpdates = 1
+    fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+    fusedLocationProviderClient.requestLocationUpdates(
+      locationRequest, locationCallback, Looper.myLooper()
+    )
+  }
+
+
+  private val locationCallback = object : LocationCallback() {
+    override fun onLocationResult(locationResult: LocationResult) {
+      val lastLocation: Location? = locationResult.lastLocation
+      Log.d(
+        TAG, "your last last location: " + lastLocation?.longitude.toString() + "," +
+                "" + lastLocation?.longitude.toString()
+      )
+
+
+      lastLocation?.latitude?.let {
+        getCityName(
+          it,
+          lastLocation.longitude
+        )
+      }
+
+
+    }
+  }
+
 
   private fun setupRecyclerView(listdata: List<WeatherData>?, weatherType: WeatherType?) {
     val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -100,12 +233,6 @@ class MainActivity : AppCompatActivity() {
             )
           }
 
-          locationTracker.getCurrentLocation()?.longitude?.let {
-            locationTracker.getCurrentLocation()?.latitude?.let { it1 ->
-              getAddress(it1,
-                it)
-            }
-          }
 
 
           setupRecyclerView(
@@ -127,26 +254,6 @@ class MainActivity : AppCompatActivity() {
 
 
 
-  private fun getAddress(latitude: Double, longitude: Double) {
-   // val result = StringBuilder()
-    try {
-      val geocoder = Geocoder(this, Locale.getDefault())
-      val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-      if (addresses.size > 0) {
-        val address = addresses[0]
-
-        binding.txtPlace.text = address.locality
-      //  result.append(address.locality).append("\n")
-       // result.append(address.countryName)
-      }
-    } catch (e: IOException) {
-      e.message?.let { Log.e("tag", it) }
-    }
-
-   // Toast.makeText(this, result.toString(), Toast.LENGTH_SHORT).show()
-   // Log.d(Companion.TAG, "getAddress: ${result.toString()}")
-
-  }
 
   companion object {
     private const val TAG = "MainActivity"
