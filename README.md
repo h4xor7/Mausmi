@@ -6,3 +6,5 @@ To install the app, simply clone or download the repository from GitHub and open
 
 ## Usage
 Upon opening the app, the user will be prompted to allow access to their device's location. Once access is granted, the app will display the current temperature, humidity, and a brief description of the weather conditions at the user's current location.
+
+
