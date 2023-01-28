@@ -1,3 +1,5 @@
+![screen_shot.png](snaps/snap_ylw.png)
+
 # Mausmi
 This is an Android app that displays the current weather forecast for a user's current location. The app uses the Open-Meteo API to retrieve weather data and display it to the user in a user-friendly format.
 
